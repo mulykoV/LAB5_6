@@ -1,16 +1,22 @@
-import unittest
-import app as tested_app
-import json
+# Використовуємо базовий образ з Python
+FROM python:3.9-slim
 
-class FlaskAppTests(unittest.TestCase):
+# Встановлюємо оновлення та потрібні пакети
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    curl unzip && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-    def setUp(self):
-        self.app = tested_app.app.test_client()
+# Встановлюємо бібліотеку junit-xml
+RUN pip install --no-cache-dir junit-xml
 
-    def test_get_hello_endpoint(self):
-        r = self.app.get('/')
-        self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.get_data(), b'Hello world from app Pipeline testing.')
+# Копіюємо всі файли проекту
+WORKDIR /app
+COPY . .
 
-if __name__ == '__main__':
-    unittest.main()
+# Переконатися, що директорія для звітів існує
+RUN mkdir -p /app/test-reports
+
+# Команда за замовчуванням для запуску тестів
+CMD ["python", "-m", "unittest", "discover", "-s", "tests"]
