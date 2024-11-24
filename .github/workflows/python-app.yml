@@ -55,6 +55,10 @@ jobs:
           terraform_version: 1.0.1
           terraform_wrapper: false
 
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: terraform
+
       # Terraform Format
       - name: Terraform Format
         run: terraform fmt -check
