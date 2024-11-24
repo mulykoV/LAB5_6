@@ -10,7 +10,7 @@ terraform {
 
   # Backend configuration для S3 та DynamoDB
   backend "s3" {
-    bucket         = "lab-my-tf-state"
+    bucket         = "lab6-aws-trform"
     key            = "terraform.tfstate"
     region         = "eu-central-1"
     dynamodb_table = "lab-my-tf-lockid"
