@@ -6,6 +6,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 3.0"
+    }
   }
 
   backend "s3" {
@@ -18,6 +22,10 @@ terraform {
 
 provider "aws" {
   region = "ap-northeast-1"
+}
+
+provider "docker" {
+  host = "unix:///var/run/docker.sock"
 }
 
 # Declare REPOSITORY_URI variable
@@ -61,6 +69,22 @@ resource "aws_security_group" "web_app" {
   }
 }
 
+# ECR repository resource
+resource "aws_ecr_repository" "flask_app" {
+  name = "flask-app-repo"
+}
+
+# Build the Docker image and push it to ECR
+resource "docker_image" "flask_app_image" {
+  name          = "${aws_ecr_repository.flask_app.repository_url}:latest"
+  build {
+    context    = "D:/Learning/ProgrammingTechnology/LAB5-6"  # Path to your Dockerfile
+    dockerfile = "Dockerfile"  # Dockerfile location
+  }
+
+  push = true
+}
+
 # Lightsail container service
 resource "aws_lightsail_container_service" "flask_application" {
   name  = "flask-app"
@@ -82,7 +106,7 @@ resource "aws_lightsail_container_service" "flask_application" {
 resource "aws_lightsail_container_service_deployment_version" "flask_app_deployment" {
   container {
     container_name = "flask-application"
-    image          = "682033487579.dkr.ecr.ap-northeast-1.amazonaws.com/python_app_repository:latest" 
+    image          = docker_image.flask_app_image.name # Using the created Docker image
 
     ports = {
       80 = "HTTP"
@@ -118,11 +142,11 @@ resource "aws_iam_role" "ecr_access_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
+      Effect   = "Allow"
       Principal = {
         Service = "lightsail.amazonaws.com"
       }
-      Action = "sts:AssumeRole"
+      Action   = "sts:AssumeRole"
     }]
   })
 }
