@@ -50,36 +50,16 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ap-northeast-1
+        aws-region: eu-central-1
 
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
-    # Set ECR variables and debug with echo statements
-    - name: Set ECR Variables and Debug
-      run: |
-        echo "ECR_REGISTRY=682033487579.dkr.ecr.ap-northeast-1.amazonaws.com" >> $GITHUB_ENV
-        echo "ECR_REPOSITORY=${{ secrets.REPOSITORY_NAME }}" >> $GITHUB_ENV
-        echo "IMAGE_TAG=latest" >> $GITHUB_ENV
-        echo "ECR Registry: $ECR_REGISTRY"
-        echo "ECR Repository: $ECR_REPOSITORY"
-        echo "Image Tag: $IMAGE_TAG"
-
-    # Ensure variables are available with debug
-    - name: Ensure variables are available
-      run: |
-        echo "Checking values of variables..."
-        if [ -z "$ECR_REGISTRY" ] || [ -z "$ECR_REPOSITORY" ] || [ -z "$IMAGE_TAG" ]; then
-          echo "Error: One or more required variables are missing!"
-          exit 1
-        else
-          echo "ECR_REGISTRY: $ECR_REGISTRY"
-          echo "ECR_REPOSITORY: $ECR_REPOSITORY"
-          echo "IMAGE_TAG: $IMAGE_TAG"
-        fi
-
     - name: Build and push the tagged docker image to Amazon ECR
       run: |
+        ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY=${{ secrets.REPOSITORY_NAME }}
+        IMAGE_TAG=latest
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
