@@ -82,7 +82,7 @@ resource "aws_lightsail_container_service" "flask_application" {
 resource "aws_lightsail_container_service_deployment_version" "flask_app_deployment" {
   container {
     container_name = "flask-application"
-    image          = "${var.REPOSITORY_URI}:latest" # Use variable REPOSITORY_URI
+    image          = "682033487579.dkr.ecr.ap-northeast-1.amazonaws.com/python_app_repository:latest" 
 
     ports = {
       80 = "HTTP"
