@@ -8,12 +8,11 @@ terraform {
     }
   }
 
-  # Backend configuration для S3 та DynamoDB
   backend "s3" {
     bucket         = "lab6-7ter-form"
     key            = "terraform.tfstate"
     region         = "ap-northeast-1"
-    dynamodb_table = "lab-my-tf-lockid" # Назва DynamoDB таблиці для lock-файлів
+    dynamodb_table = "lab-my-tf-lockid" # DynamoDB table for state locking
   }
 }
 
@@ -21,13 +20,13 @@ provider "aws" {
   region = "ap-northeast-1"
 }
 
-# Оголошення змінної для REPOSITORY_URI
+# Variable for Docker repository URI
 variable "REPOSITORY_URI" {
   description = "The URI of the Docker repository"
   type        = string
 }
 
-# Ресурс для безпеки: створення Security Group
+# Security group resource
 resource "aws_security_group" "web_app" {
   name        = "web_app"
   description = "Security group for web app"
@@ -36,7 +35,6 @@ resource "aws_security_group" "web_app" {
     prevent_destroy = true
   }
 
-  # Правила вхідного трафіку (ingress)
   ingress {
     from_port   = 80
     to_port     = 80
@@ -51,7 +49,6 @@ resource "aws_security_group" "web_app" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Правила вихідного трафіку (egress)
   egress {
     from_port   = 0
     to_port     = 65535
@@ -62,4 +59,49 @@ resource "aws_security_group" "web_app" {
   tags = {
     Name = "web_app"
   }
+}
+
+# Lightsail container service
+resource "aws_lightsail_container_service" "flask_application" {
+  name  = "flask-app"
+  power = "nano"
+  scale = 1
+
+  private_registry_access {
+    ecr_image_puller_role {
+      is_active = true
+    }
+  }
+
+  tags = {
+    version = "1.0.0"
+  }
+}
+
+# Deployment version for Lightsail container service
+resource "aws_lightsail_container_service_deployment_version" "flask_app_deployment" {
+  container {
+    container_name = "flask-application"
+    image          = "${var.REPOSITORY_URI}:latest"
+
+    ports = {
+      8080 = "HTTP"
+    }
+  }
+
+  public_endpoint {
+    container_name  = "flask-application"
+    container_port  = 8080
+
+    health_check {
+      healthy_threshold   = 2
+      unhealthy_threshold = 2
+      timeout_seconds     = 2
+      interval_seconds    = 5
+      path                = "/"
+      success_codes       = "200-499"
+    }
+  }
+
+  service_name = aws_lightsail_container_service.flask_application.name
 }
