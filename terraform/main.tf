@@ -20,12 +20,6 @@ provider "aws" {
   region = "ap-northeast-1"
 }
 
-# Variable for Docker repository URI
-variable "REPOSITORY_URI" {
-  description = "The URI of the Docker repository"
-  type        = string
-}
-
 # Security group resource
 resource "aws_security_group" "web_app" {
   name        = "web_app"
@@ -82,7 +76,7 @@ resource "aws_lightsail_container_service" "flask_application" {
 resource "aws_lightsail_container_service_deployment_version" "flask_app_deployment" {
   container {
     container_name = "flask-application"
-    image          = "${var.REPOSITORY_URI}:latest"
+    image          = "123456789012.dkr.ecr.ap-northeast-1.amazonaws.com/python_app_repository:latest" # Explicit URI
 
     ports = {
       8080 = "HTTP"
@@ -104,4 +98,49 @@ resource "aws_lightsail_container_service_deployment_version" "flask_app_deploym
   }
 
   service_name = aws_lightsail_container_service.flask_application.name
+}
+
+# Output logs from Lightsail deployment (to troubleshoot)
+output "lightsail_deployment_logs" {
+  value = aws_lightsail_container_service_deployment_version.flask_app_deployment.container
+}
+
+# IAM Role for ECR access (optional if already configured)
+resource "aws_iam_role" "ecr_access_role" {
+  name = "lightsail_ecr_access"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "lightsail.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_policy" "ecr_access_policy" {
+  name        = "ecr_access_policy"
+  description = "Policy to allow Lightsail to access ECR"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = [
+        "ecr:GetAuthorizationToken",
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage"
+      ]
+      Resource = "*"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecr_access_policy_attachment" {
+  role       = aws_iam_role.ecr_access_role.name
+  policy_arn = aws_iam_policy.ecr_access_policy.arn
 }
