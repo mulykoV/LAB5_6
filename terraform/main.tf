@@ -20,6 +20,12 @@ provider "aws" {
   region = "ap-northeast-1"
 }
 
+# Declare REPOSITORY_URI variable
+variable "REPOSITORY_URI" {
+  description = "The URI of the Docker repository"
+  type        = string
+}
+
 # Security group resource
 resource "aws_security_group" "web_app" {
   name        = "web_app"
@@ -76,7 +82,7 @@ resource "aws_lightsail_container_service" "flask_application" {
 resource "aws_lightsail_container_service_deployment_version" "flask_app_deployment" {
   container {
     container_name = "flask-application"
-    image          = "123456789012.dkr.ecr.ap-northeast-1.amazonaws.com/python_app_repository:latest" # Explicit URI
+    image          = "${var.REPOSITORY_URI}:latest" # Use variable REPOSITORY_URI
 
     ports = {
       8080 = "HTTP"
