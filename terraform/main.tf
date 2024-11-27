@@ -13,11 +13,12 @@ terraform {
     bucket         = "lab6-7ter-form"
     key            = "terraform.tfstate"
     region         = "ap-northeast-1"
+    dynamodb_table = "lab-my-tf-lockid" # Назва DynamoDB таблиці
   }
 }
 
 provider "aws" {
-  region = "eu-central-1"
+  region = "ap-northeast-1"
 }
 
 resource "aws_security_group" "web_app" {
