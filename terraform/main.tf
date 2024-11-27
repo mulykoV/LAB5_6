@@ -3,7 +3,13 @@ terraform {
 
   required_providers {
     aws = {
-@@ -13,14 +13,21 @@ terraform {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+
+  # Backend configuration для S3 та DynamoDB
+  backend "s3" {
     bucket         = "lab6-7ter-form"
     key            = "terraform.tfstate"
     region         = "ap-northeast-1"
@@ -20,11 +26,40 @@ variable "REPOSITORY_URI" {
   description = "The URI of the Docker repository"
   type        = string
 }
+
 # Ресурс для безпеки: створення Security Group
 resource "aws_security_group" "web_app" {
   name        = "web_app"
   description = "Security group for web app"
-@@ -56,3 +63,5 @@ resource "aws_security_group" "web_app" {
+
+  lifecycle {
+    prevent_destroy = true
+  }
+
+  # Правила вхідного трафіку (ingress)
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Правила вихідного трафіку (egress)
+  egress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
     Name = "web_app"
   }
 }
