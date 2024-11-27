@@ -90,7 +90,7 @@ resource "aws_security_group" "web_app" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["your_public_ip/32"] # Заміна на вашу публічну IP адресу
+    cidr_blocks = ["0.0.0.0/0"] 
   }
 
   egress {
