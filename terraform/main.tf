@@ -13,7 +13,7 @@ terraform {
     bucket         = "lab6-7ter-form"
     key            = "terraform.tfstate"
     region         = "ap-northeast-1"
-    dynamodb_table = "lab_my_tf_lokid"
+    dynamodb_table = "lab-my-tf-lokid"
   }
 }
 
