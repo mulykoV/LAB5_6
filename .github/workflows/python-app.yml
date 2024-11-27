@@ -56,25 +56,22 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
-    # Set ECR variables
-    - name: Set ECR Variables
+    # Set ECR variables with debug output
+    - name: Set ECR Variables and Debug
       run: |
+        echo "Setting ECR variables..."
         echo "ECR_REGISTRY=682033487579.dkr.ecr.ap-northeast-1.amazonaws.com" >> $GITHUB_ENV
         echo "ECR_REPOSITORY=${{ secrets.REPOSITORY_NAME }}" >> $GITHUB_ENV
         echo "IMAGE_TAG=latest" >> $GITHUB_ENV
-
-    # Debugging the ECR registry and repository
-    - name: Debug ECR Registry and Repository
-      run: |
         echo "ECR Registry: $ECR_REGISTRY"
         echo "ECR Repository: $ECR_REPOSITORY"
         echo "Image Tag: $IMAGE_TAG"
 
-    # Check if variables are set correctly
-    - name: Check if ECR Registry and Repository are set
+    # Ensure variables are available
+    - name: Ensure variables are available
       run: |
-        if [[ -z "$ECR_REGISTRY" || -z "$ECR_REPOSITORY" || -z "$IMAGE_TAG" ]]; then
-          echo "Error: Missing required variables!"
+        if [ -z "$ECR_REGISTRY" ] || [ -z "$ECR_REPOSITORY" ] || [ -z "$IMAGE_TAG" ]; then
+          echo "Error: One or more required variables are missing!"
           exit 1
         fi
 
