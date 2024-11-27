@@ -74,15 +74,29 @@ resource "aws_ecr_repository" "flask_app" {
   name = "flask-app-repo"
 }
 
-# Build the Docker image and push it to ECR
+# Build the Docker image
 resource "docker_image" "flask_app_image" {
   name          = "${aws_ecr_repository.flask_app.repository_url}:latest"
   build {
     context    = "D:/Learning/ProgrammingTechnology/LAB5-6"  # Path to your Dockerfile
     dockerfile = "Dockerfile"  # Dockerfile location
   }
+}
 
-  push = true
+# Push Docker image to ECR
+resource "aws_ecr_lifecycle_policy" "flask_app_policy" {
+  repository_name = aws_ecr_repository.flask_app.name
+  lifecycle_policy {
+    rules {
+      rule_priority = 1
+      action {
+        type = "expire"
+      }
+      filter {
+        tag_status = "TAGGED"
+      }
+    }
+  }
 }
 
 # Lightsail container service
@@ -106,7 +120,7 @@ resource "aws_lightsail_container_service" "flask_application" {
 resource "aws_lightsail_container_service_deployment_version" "flask_app_deployment" {
   container {
     container_name = "flask-application"
-    image          = docker_image.flask_app_image.name # Using the created Docker image
+    image          = docker_image.flask_app_image.name  # Using the created Docker image
 
     ports = {
       80 = "HTTP"
