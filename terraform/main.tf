@@ -8,7 +8,6 @@ terraform {
     }
   }
 
-  # Backend configuration для S3 та DynamoDB
   backend "s3" {
     bucket         = "lab6-7ter-form"
     key            = "terraform.tfstate"
@@ -21,13 +20,11 @@ provider "aws" {
   region = "ap-northeast-1"
 }
 
-# Оголошення змінної для REPOSITORY_URI
 variable "REPOSITORY_URI" {
   description = "The URI of the Docker repository"
   type        = string
 }
 
-# Lightsail контейнерний сервіс
 resource "aws_lightsail_container_service" "flask_application" {
   name  = "flask-app"
   power = "nano"
@@ -71,7 +68,6 @@ resource "aws_lightsail_container_service_deployment_version" "flask_app_deploym
   service_name = aws_lightsail_container_service.flask_application.name
 }
 
-# Security Group
 resource "aws_security_group" "web_app" {
   name        = "web_app"
   description = "Security group for web app"
