@@ -10,9 +10,10 @@ terraform {
 
   # Backend configuration для S3 та DynamoDB
   backend "s3" {
-    bucket         = "lab6-aws-trform"
+    bucket         = "lab6-7ter-form"
     key            = "terraform.tfstate"
-    region         = "eu-central-1"
+    region         = "ap-northeast-1"
+    dynamodb_table = "lab_my_tf_lookid"
   }
 }
 
