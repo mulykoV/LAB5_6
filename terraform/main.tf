@@ -8,6 +8,7 @@ terraform {
     }
   }
 
+  # Backend configuration для S3 та DynamoDB
   backend "s3" {
     bucket         = "lab6-7ter-form"
     key            = "terraform.tfstate"
@@ -90,7 +91,7 @@ resource "aws_security_group" "web_app" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] 
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
