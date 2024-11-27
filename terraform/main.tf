@@ -78,7 +78,7 @@ resource "aws_ecr_repository" "flask_app" {
 resource "docker_image" "flask_app_image" {
   name          = "${aws_ecr_repository.flask_app.repository_url}:latest"
   build {
-    context    = "D:/Learning/ProgrammingTechnology/LAB5-6"  # Path to your Dockerfile
+    context    = "https://github.com/mulykoV/LAB5_6"  # Path to your Dockerfile
     dockerfile = "Dockerfile"  # Dockerfile location
   }
 }
