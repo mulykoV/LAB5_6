@@ -85,13 +85,13 @@ resource "aws_lightsail_container_service_deployment_version" "flask_app_deploym
     image          = "${var.REPOSITORY_URI}:latest" # Use variable REPOSITORY_URI
 
     ports = {
-      8080 = "HTTP"
+      80 = "HTTP"
     }
   }
 
   public_endpoint {
     container_name  = "flask-application"
-    container_port  = 8080
+    container_port  = 80
 
     health_check {
       healthy_threshold   = 2
