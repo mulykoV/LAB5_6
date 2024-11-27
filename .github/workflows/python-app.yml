@@ -34,14 +34,18 @@ jobs:
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      run: terraform plan -no-color -input=false -refresh=true
+        REPOSITORY_URI: ${{ secrets.REPOSITORY_URI }}
+      run: |
+        terraform plan -no-color -input=false -refresh=true -var="REPOSITORY_URI=${{ secrets.REPOSITORY_URI }}"
       working-directory: terraform
 
     - name: Terraform Apply
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      run: terraform apply -input=false -auto-approve
+        REPOSITORY_URI: ${{ secrets.REPOSITORY_URI }}
+      run: |
+        terraform apply -input=false -auto-approve -var="REPOSITORY_URI=${{ secrets.REPOSITORY_URI }}"
       working-directory: terraform
 
     # Docker and ECR steps
