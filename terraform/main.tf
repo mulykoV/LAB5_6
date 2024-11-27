@@ -8,12 +8,11 @@ terraform {
     }
   }
 
-  # Backend configuration для S3 та DynamoDB
   backend "s3" {
     bucket         = "lab6-7ter-form"
     key            = "terraform.tfstate"
     region         = "ap-northeast-1"
-    dynamodb_table = "lab-my-tf-lockid" # Назва DynamoDB таблиці для lock-файлів
+    dynamodb_table = "lab-my-tf-lockid"
   }
 }
 
@@ -27,7 +26,51 @@ variable "REPOSITORY_URI" {
   type        = string
 }
 
-# Ресурс для безпеки: створення Security Group
+# Lightsail контейнерний сервіс
+resource "aws_lightsail_container_service" "flask_application" {
+  name  = "flask-app"
+  power = "nano"
+  scale = 1
+
+  private_registry_access {
+    ecr_image_puller_role {
+      is_active = true
+    }
+  }
+
+  tags = {
+    version = "1.0.0"
+  }
+}
+
+resource "aws_lightsail_container_service_deployment_version" "flask_app_deployment" {
+  container {
+    container_name = "flask-application"
+    image          = "${var.REPOSITORY_URI}:latest"
+
+    ports = {
+      8080 = "HTTP"
+    }
+  }
+
+  public_endpoint {
+    container_name  = "flask-application"
+    container_port  = 8080
+
+    health_check {
+      healthy_threshold   = 2
+      unhealthy_threshold = 2
+      timeout_seconds     = 2
+      interval_seconds    = 5
+      path                = "/"
+      success_codes       = "200-499"
+    }
+  }
+
+  service_name = aws_lightsail_container_service.flask_application.name
+}
+
+# Security Group
 resource "aws_security_group" "web_app" {
   name        = "web_app"
   description = "Security group for web app"
@@ -36,7 +79,6 @@ resource "aws_security_group" "web_app" {
     prevent_destroy = true
   }
 
-  # Правила вхідного трафіку (ingress)
   ingress {
     from_port   = 80
     to_port     = 80
@@ -48,10 +90,9 @@ resource "aws_security_group" "web_app" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["your_public_ip/32"] # Заміна на вашу публічну IP адресу
   }
 
-  # Правила вихідного трафіку (egress)
   egress {
     from_port   = 0
     to_port     = 65535
@@ -63,5 +104,3 @@ resource "aws_security_group" "web_app" {
     Name = "web_app"
   }
 }
-
-# Інші ресурси, такі як EC2, S3, RDS тощо, можна додавати тут, залежно від твоїх вимог
