@@ -38,7 +38,6 @@ resource "aws_lightsail_container_service" "flask_application" {
 }
 
 resource "aws_lightsail_container_service_deployment_version" "flask_app_deployment" {
-  service_name = aws_lightsail_container_service.flask_application.name
 
   container {
     container_name = "flask-application" # Правильний аргумент
@@ -61,4 +60,6 @@ resource "aws_lightsail_container_service_deployment_version" "flask_app_deploym
       success_codes       = "200-499"
     }
   }
+
+  service_name = aws_lightsail_container_service.flask_application.name
 }
