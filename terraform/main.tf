@@ -22,18 +22,20 @@ provider "aws" {
 }
 
 variable "REPOSITORY_URI" {
-  type = string
-  description = "Опис змінної з назвою реєстру образів"  # Red label
+  type        = string
+  description = "Опис змінної з назвою реєстру образів"
 }
 
 resource "aws_lightsail_container_service" "flask_application" {
-  name = "flask-application"
+  name  = "flask-application"
   power = "nano"  # Тип виводу
   scale = 1
+
   private_registry_access {
-    ecr_image_puller_role = true  # Опис прав доступу до приватного репозиторію у вигляді ролі ecr_image_puller_role
-    is_active = true
+    ecr_image_puller_role = true
+    is_active             = true
   }
+
   tags = {
     version = "1.0.0"
   }
@@ -41,29 +43,27 @@ resource "aws_lightsail_container_service" "flask_application" {
 
 resource "aws_lightsail_container_service_deployment_version" "flask_app_deployment" {
   container_name = "flask-application"
-  image = "${var.REPOSITORY_URI}:latest"  # Опис реєстру образів
+  image          = "${var.REPOSITORY_URI}:latest"
 
-  ports {
-    # Consistent with the port exposed by the Dockerfile and app.py
-    8080 = "HTTP"
+  ports = { # Використання мапи для портів
+    "8080" = "HTTP"
   }
 
   public_endpoint {
     container_name = "flask-application"
-    # Consistent with the port exposed by the Dockerfile and app.py
     container_port = 8080
   }
 
   health_check {
-    # Визначення точки входу та перевірка працездатності
-    healthy_threshold = 3
+    healthy_threshold   = 3
     unhealthy_threshold = 5
-    timeout_seconds = 5
-    interval_seconds = 30
-    path = "/"
-    success_codes = "200-499"
+    timeout_seconds     = 5
+    interval_seconds    = 30
+    path                = "/"
+    success_codes       = "200-499"
   }
 }
 
-service_name = aws_lightsail_container_service.flask_application.name
+output "service_name" {
+  value = aws_lightsail_container_service.flask_application.name
 }
