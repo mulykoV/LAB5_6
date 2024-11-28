@@ -27,7 +27,7 @@ variable "REPOSITORY_URI" {
 
 resource "aws_lightsail_container_service" "flask_application" {
   name  = "flask-application"
-  power = "nano"  
+  power = "nano"  # Тип виводу
   scale = 1
 
   private_registry_access {} # Увімкнення доступу до приватного реєстру
@@ -41,8 +41,8 @@ resource "aws_lightsail_container_service_deployment_version" "flask_app_deploym
   service_name = aws_lightsail_container_service.flask_application.name
 
   container {
-    name  = "flask-application"
-    image = "${var.REPOSITORY_URI}:latest"
+    container_name = "flask-application" # Правильний аргумент
+    image          = "${var.REPOSITORY_URI}:latest"
 
     ports = {
       "8080" = "HTTP"
@@ -50,8 +50,8 @@ resource "aws_lightsail_container_service_deployment_version" "flask_app_deploym
   }
 
   public_endpoint {
-    container_name = "flask-application"
-
+    container_name = "flask-application" # Обов'язковий аргумент
+    container_port = 8080               # Правильний порт для доступу
     health_check {
       healthy_threshold   = 3
       unhealthy_threshold = 5
