@@ -8,7 +8,6 @@ terraform {
     }
   }
 
-  # Backend configuration для S3 та DynamoDB
   backend "s3" {
     bucket         = "lab6-7ter-form"
     key            = "terraform.tfstate"
@@ -32,8 +31,7 @@ resource "aws_lightsail_container_service" "flask_application" {
   scale = 1
 
   private_registry_access {
-    ecr_image_puller_role = true
-    is_active             = true
+    is_active = true  # Увімкнення доступу до приватного реєстру
   }
 
   tags = {
@@ -42,25 +40,28 @@ resource "aws_lightsail_container_service" "flask_application" {
 }
 
 resource "aws_lightsail_container_service_deployment_version" "flask_app_deployment" {
-  container_name = "flask-application"
-  image          = "${var.REPOSITORY_URI}:latest"
+  service_name = aws_lightsail_container_service.flask_application.name
 
-  ports = { # Використання мапи для портів
-    "8080" = "HTTP"
+  container {
+    name  = "flask-application"
+    image = "${var.REPOSITORY_URI}:latest"
+
+    ports = {
+      "8080" = "HTTP"
+    }
   }
 
   public_endpoint {
     container_name = "flask-application"
-    container_port = 8080
-  }
 
-  health_check {
-    healthy_threshold   = 3
-    unhealthy_threshold = 5
-    timeout_seconds     = 5
-    interval_seconds    = 30
-    path                = "/"
-    success_codes       = "200-499"
+    health_check {
+      healthy_threshold   = 3
+      unhealthy_threshold = 5
+      timeout_seconds     = 5
+      interval_seconds    = 30
+      path                = "/"
+      success_codes       = "200-499"
+    }
   }
 }
 
