@@ -27,12 +27,10 @@ variable "REPOSITORY_URI" {
 
 resource "aws_lightsail_container_service" "flask_application" {
   name  = "flask-application"
-  power = "nano"  # Тип виводу
+  power = "nano"  
   scale = 1
 
-  private_registry_access {
-    is_active = true  # Увімкнення доступу до приватного реєстру
-  }
+  private_registry_access {} # Увімкнення доступу до приватного реєстру
 
   tags = {
     version = "1.0.0"
